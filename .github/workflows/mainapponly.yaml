@@ -1,0 +1,70 @@
+# This is a basic workflow to help you get started with Actions
+
+name: SPFx CICD with Office 365 CLI
+
+on:
+ push:
+    branches: [ main ]
+
+# Variables that are available for all the jobs in the workflow
+env:
+  SPPKG_FILE_NAME: 'react-groups.sppkg'    
+
+jobs:  
+  
+  build-and-deploy:
+    #needs: sonarcloud
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Checkout code
+    - name: Checkout code
+      uses: actions/checkout@v1
+      
+    # Setup node.js runtime
+    - name: Use Node.js 10.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 10.x
+    
+    # npm install
+    - name: Run npm ci
+      run: npm ci
+    
+    # install gulp if mac a
+    - name: Run npm i -g gulp
+      run: npm i -g gulp
+      if: runner.os == 'macOS'
+    
+    # gulp bundle and package solution
+    - name: Bundle and package
+      run: |
+        gulp bundle --ship
+        gulp package-solution --ship    
+    
+       
+    
+    # Login to tenant using pnp
+    - name: Office 365 pnp Login
+      id: office-365-cli-deploy
+      shell: pwsh
+      run: |         
+         Set-PSRepository PSGallery -InstallationPolicy Trusted        
+         Install-Module -Name PnP.PowerShell         
+         Import-Module -Name PnP.PowerShell                                             
+         
+         #siteselected
+         ##Connect-PnPOnline -ClientId ec38d57b-6bed-4542-9ea9-ed513a598b5b -CertificatePath "testsiteselected.pfx" -CertificatePassword (ConvertTo-SecureString -AsPlainText "Ps1234" -Force) -Url "https://sustest365.sharepoint.com/sites/TestSiteSelected" -Tenant "sustest365.onmicrosoft.com"
+         #apponly
+         Connect-PnPOnline -Url "https://sustest365.sharepoint.com/sites/testsoltions" -ClientId "2bd31722-bc28-4399-a91e-1676c84b7151" -ClientSecret "aYB2fl1cLb1kmY9BL3lusogG7gN9q7fbXkkbmwjS40E=" -WarningAction Ignore
+         #Connect-PnPOnline -Url "https://sustest365.sharepoint.com/sites/sitetest2" -ClientId ${{ secrets.CLIENT_ID }} -ClientSecret ${{ secrets.CLIENT_SECRET }} -WarningAction Ignore
+         #Connect-PnPOnline -Url "https://sustest365.sharepoint.com/sites/testcdn" -ClientId ${{ secrets.CLIENT_ID1 }} -ClientSecret ${{ secrets.CLIENT_SECRET1 }} -WarningAction Ignore
+         #Connect-PnPOnline -Url "https://sustest365.sharepoint.com/sites/testclon2" -ClientId ${{ secrets.CLIENT_ID1 }} -ClientSecret ${{ secrets.CLIENT_SECRET1 }} -WarningAction Ignore
+         
+         
+         $app = Add-PnPApp -Path sharepoint/solution/${{ env.SPPKG_FILE_NAME }} -Scope Site -Publish -SkipFeatureDeployment -Overwrite
+         $Id = $app.Id
+         Write-Host -f DarkYellow " output appid $Id" 
+         #Install-PnPApp -Identity $Id -Scope Site
+         Publish-PnPApp -Identity $Id -Scope Site -SkipFeatureDeployment
+         Write-Host -f DarkYellow " output appid $Id" 

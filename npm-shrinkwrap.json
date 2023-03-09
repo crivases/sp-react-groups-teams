@@ -3740,8 +3740,8 @@
       }
     },
     "@microsoft/sp-webpart-workbench": {
-      "version": "1.16.1",
-      "resolved": "https://registry.npmjs.org/@microsoft/sp-webpart-workbench/-/sp-webpart-workbench-1.16.1.tgz",
+      "version": "1.12.1",
+      "resolved": "https://registry.npmjs.org/@microsoft/sp-webpart-workbench/-/sp-webpart-workbench-1.12.1.tgz",
       "integrity": "sha512-o8a1m1+MZZuJvOMvddHFbugItjh+7TN6Ar9vGjHvVHA3q+fatA/Me4RpkbAQyDmXZU/eXi2M1E0/U5T/etEzKw==",
       "dev": true,
       "requires": {
